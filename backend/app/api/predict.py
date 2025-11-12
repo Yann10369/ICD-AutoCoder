@@ -2,8 +2,8 @@ from fastapi import APIRouter
 
 router = APIRouter()
 
-@router.get("/predict")
+@router.get("/")
 def test():
-    return{
-        "Hello world",
+    return {
+        "message": "Hello world"
     }

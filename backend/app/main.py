@@ -8,3 +8,9 @@ app.include_router(graph.router, prefix="/graph", tags=["Graph"])
 app.include_router(llm.router, prefix="/llm", tags=["llm"])
 app.include_router(models.router, prefix="/models", tags=["models"])
 app.include_router(explain.router, prefix="/explain", tags=["explain"])
+
+@app.get("/")
+def app_g():
+    return {
+        "into app"
+    }

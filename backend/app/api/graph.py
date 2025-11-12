@@ -2,7 +2,7 @@ from fastapi import APIRouter
 
 router = APIRouter()
 
-@router.get("/graph")
+@router.get("/")
 def test():
     return{
         "Hello world",

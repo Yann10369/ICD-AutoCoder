@@ -2,7 +2,7 @@ from fastapi import APIRouter
 
 router = APIRouter()
 
-@router.get("/llm")
+@router.get("/")
 def test():
     return{
         "Hello world",

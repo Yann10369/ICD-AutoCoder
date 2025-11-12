@@ -2,7 +2,7 @@ from fastapi import APIRouter
 
 router = APIRouter()
 
-@router.get("/models")
+@router.get("/")
 def test():
     return{
         "Hello world",
