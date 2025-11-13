@@ -44,11 +44,12 @@ const ModelSelector = ({
   modelParams,
   onModelChange,
   onParamChange,
+  onSubmit,
 }) => (
   <div className="space-y-6">
     <div>
       <label className="block text-lg font-semibold text-gray-800 mb-3">
-        🤖 选择预测模型
+        选择预测模型
       </label>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
@@ -68,7 +69,7 @@ const ModelSelector = ({
     </div>
     <div className="bg-gray-50 p-6 rounded-lg">
       <label className="block text-lg font-semibold text-gray-800 mb-4">
-        🎛️ 模型参数调整
+        模型参数调整
       </label>
       <div className="space-y-4">
         <SliderParam
@@ -99,6 +100,15 @@ const ModelSelector = ({
           desc="只显示置信度高于此阈值的预测"
         />
       </div>
+    </div>
+    {/* Submit button */}
+    <div className="pt-4">
+      <button
+        onClick={onSubmit}
+        className="w-full py-3 px-6 rounded-lg font-semibold text-white text-lg transition-all bg-indigo-600 hover:bg-indigo-700 shadow-lg hover:shadow-xl"
+      >
+        ✓ 确认配置并返回输入界面
+      </button>
     </div>
   </div>
 );

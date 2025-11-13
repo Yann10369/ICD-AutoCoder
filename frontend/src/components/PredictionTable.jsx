@@ -64,10 +64,10 @@ const StatCard = ({ label, value, icon }) => (
 // Prediction results section
 const PredictionTable = ({ predictions }) => (
   <div className="space-y-6">
-    <h2 className="text-2xl font-bold text-gray-800 mb-4">📊 ICD编码预测结果</h2>
+    <h2 className="text-2xl font-bold text-gray-800 mb-4">ICD编码预测结果</h2>
     {/* Medical entity recognition results */}
     <div className="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-500">
-      <h3 className="text-lg font-semibold text-blue-900 mb-3">🏷️ 医学实体识别</h3>
+      <h3 className="text-lg font-semibold text-blue-900 mb-3">医学实体识别</h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <EntityBox
           title="疾病 (Disease)"
@@ -88,7 +88,7 @@ const PredictionTable = ({ predictions }) => (
     </div>
     {/* ICD code prediction */}
     <div className="bg-indigo-50 p-6 rounded-lg border-l-4 border-indigo-500">
-      <h3 className="text-lg font-semibold text-indigo-900 mb-4">💊 ICD编码预测</h3>
+      <h3 className="text-lg font-semibold text-indigo-900 mb-4">ICD编码预测</h3>
       <div className="space-y-3">
         {(predictions.icdPredictions || []).map((pred, idx) => (
           <ICDPredictionBar
@@ -106,22 +106,22 @@ const PredictionTable = ({ predictions }) => (
       <StatCard
         label="识别实体数"
         value={predictions.entityCount || 0}
-        icon="🏷️"
+        icon=""
       />
       <StatCard
         label="预测编码数"
         value={predictions.icdPredictions?.length || 0}
-        icon="💊"
+        icon=""
       />
       <StatCard
         label="平均置信度"
         value={`${((predictions.avgConfidence || 0) * 100).toFixed(1)}%`}
-        icon="📈"
+        icon=""
       />
       <StatCard
         label="处理时间"
         value={`${predictions.processingTime || 0}ms`}
-        icon="⏱️"
+        icon=""
       />
     </div>
   </div>

@@ -58,10 +58,10 @@ const DecisionStep = ({ step, description, confidence }) => (
 // Explanation analysis section
 const ExplanationPanel = ({ predictions }) => (
   <div className="space-y-6">
-    <h2 className="text-2xl font-bold text-gray-800 mb-4">🔍 可解释性分析</h2>
+    <h2 className="text-2xl font-bold text-gray-800 mb-4"> 可解释性分析</h2>
     {/* Keyword heatmap analysis */}
     <div className="bg-yellow-50 p-6 rounded-lg border-l-4 border-yellow-500">
-      <h3 className="text-lg font-semibold text-yellow-900 mb-4">🔥 关键词热度分析</h3>
+      <h3 className="text-lg font-semibold text-yellow-900 mb-4">关键词热度分析</h3>
       <div className="space-y-3">
         {(predictions.keywordHeatmap || []).map((keyword, idx) => (
           <KeywordHeatItem
@@ -75,7 +75,7 @@ const ExplanationPanel = ({ predictions }) => (
     </div>
     {/* Feature importance */}
     <div className="bg-green-50 p-6 rounded-lg border-l-4 border-green-500">
-      <h3 className="text-lg font-semibold text-green-900 mb-4">📊 特征重要性排名</h3>
+      <h3 className="text-lg font-semibold text-green-900 mb-4">特征重要性排名</h3>
       <div className="space-y-2">
         {(predictions.featureImportance || []).map((feature, idx) => (
           <FeatureImportanceBar
@@ -89,7 +89,7 @@ const ExplanationPanel = ({ predictions }) => (
     </div>
     {/* Model decision path */}
     <div className="bg-purple-50 p-6 rounded-lg border-l-4 border-purple-500">
-      <h3 className="text-lg font-semibold text-purple-900 mb-4">🛤️ 模型决策路径</h3>
+      <h3 className="text-lg font-semibold text-purple-900 mb-4">模型决策路径</h3>
       <div className="space-y-3">
         {(predictions.decisionPath || []).map((step, idx) => (
           <DecisionStep

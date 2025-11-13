@@ -31,7 +31,7 @@ const KnowledgePathItem = ({ entity, related, highlight }) => (
 // Knowledge visualization section
 const GraphViewer = ({ predictions }) => (
   <div className="space-y-6">
-    <h2 className="text-2xl font-bold text-gray-800 mb-4">🧠 知识路径可视化</h2>
+    <h2 className="text-2xl font-bold text-gray-800 mb-4">知识路径可视化</h2>
     <div className="bg-gray-50 p-8 rounded-lg border-2 border-dashed border-gray-300 min-h-96 flex items-center justify-center">
       <div className="text-center">
         <Network size={64} className="text-gray-400 mx-auto mb-4" />
@@ -59,7 +59,7 @@ const GraphViewer = ({ predictions }) => (
     </div>
     <div className="bg-indigo-50 p-4 rounded-lg border-l-4 border-indigo-500">
       <p className="text-sm text-indigo-900">
-        💡 <strong>可视化说明：</strong> 图中高亮的节点表示对最终ICD编码预测影响最大的医学实体。
+        <strong>可视化说明：</strong> 图中高亮的节点表示对最终ICD编码预测影响最大的医学实体。
         边的粗细表示实体间的关联强度。
       </p>
     </div>

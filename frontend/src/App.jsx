@@ -95,6 +95,12 @@ const MedicalDiagnosisSystem = () => {
     }));
   };
 
+  // Handle model config submit
+  const handleModelConfigSubmit = () => {
+    // Model parameters are already saved in state, just switch to input tab
+    setActiveTab('input');
+  };
+
   // Submit analysis
   const handleSubmit = async () => {
     if (!caseText.trim()) {
@@ -327,6 +333,7 @@ const MedicalDiagnosisSystem = () => {
                 modelParams={modelParams}
                 onModelChange={setSelectedModel}
                 onParamChange={handleParamChange}
+                onSubmit={handleModelConfigSubmit}
               />
             )}
 
