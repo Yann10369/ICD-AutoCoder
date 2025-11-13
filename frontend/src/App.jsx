@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Upload, Settings, BarChart3, Network, Zap } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Settings, BarChart3, Network, Zap, ChevronDown, ChevronUp } from 'lucide-react';
 import CaseInput from './components/CaseInput';
 import ModelSelector from './components/ModelSelector';
 import PredictionTable from './components/PredictionTable';
@@ -24,6 +24,55 @@ const MedicalDiagnosisSystem = () => {
   const [predictions, setPredictions] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('input');
+  const [sidebarVisible, setSidebarVisible] = useState(false);
+  const [languageExpanded, setLanguageExpanded] = useState(false);
+  const [preprocessExpanded, setPreprocessExpanded] = useState(false);
+  const sidebarRef = useRef(null);
+  const triggerRef = useRef(null);
+  const hideTimeoutRef = useRef(null);
+
+  // Handle sidebar visibility
+  useEffect(() => {
+    const handleMouseEnter = () => {
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+        hideTimeoutRef.current = null;
+      }
+      setSidebarVisible(true);
+    };
+
+    const handleMouseLeave = () => {
+      hideTimeoutRef.current = setTimeout(() => {
+        setSidebarVisible(false);
+      }, 2000);
+    };
+
+    const trigger = triggerRef.current;
+    const sidebar = sidebarRef.current;
+    
+    if (trigger) {
+      trigger.addEventListener('mouseenter', handleMouseEnter);
+      trigger.addEventListener('mouseleave', handleMouseLeave);
+    }
+    if (sidebar) {
+      sidebar.addEventListener('mouseenter', handleMouseEnter);
+      sidebar.addEventListener('mouseleave', handleMouseLeave);
+    }
+
+    return () => {
+      if (trigger) {
+        trigger.removeEventListener('mouseenter', handleMouseEnter);
+        trigger.removeEventListener('mouseleave', handleMouseLeave);
+      }
+      if (sidebar) {
+        sidebar.removeEventListener('mouseenter', handleMouseEnter);
+        sidebar.removeEventListener('mouseleave', handleMouseLeave);
+      }
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Handle case input
   const handleCaseInput = (e) => {
@@ -78,115 +127,234 @@ const MedicalDiagnosisSystem = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            🏥 医学诊断智能分析系统
-          </h1>
-          <p className="text-gray-600">基于AI的ICD编码预测与可解释性分析</p>
-        </div>
-
-        {/* Tab navigation */}
-        <div className="flex gap-4 mb-6 bg-white rounded-lg shadow-md p-2">
-          <TabButton 
-            active={activeTab === 'input'} 
-            onClick={() => setActiveTab('input')}
-            icon={<Upload size={20} />}
-            label="病例输入"
-          />
-          <TabButton 
-            active={activeTab === 'config'} 
-            onClick={() => setActiveTab('config')}
-            icon={<Settings size={20} />}
-            label="模型配置"
-          />
-          <TabButton 
-            active={activeTab === 'results'} 
-            onClick={() => setActiveTab('results')}
-            icon={<BarChart3 size={20} />}
-            label="预测结果"
-          />
-          <TabButton 
-            active={activeTab === 'visualization'} 
-            onClick={() => setActiveTab('visualization')}
-            icon={<Network size={20} />}
-            label="知识可视化"
-          />
-          <TabButton 
-            active={activeTab === 'explanation'} 
-            onClick={() => setActiveTab('explanation')}
-            icon={<Zap size={20} />}
-            label="可解释性分析"
-          />
-        </div>
-
-        {/* Content area */}
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          {/* Case input tab */}
+    <div className="min-h-screen bg-white relative">
+      {/* Left trigger area */}
+      <div
+        ref={triggerRef}
+        className="fixed left-0 top-0 h-full w-4 z-40"
+      />
+      
+      {/* Left Sidebar */}
+      <div
+        ref={sidebarRef}
+        className={`fixed left-0 top-0 h-full bg-white border-r border-gray-200 transition-all duration-300 z-50 ${
+          sidebarVisible ? 'w-64' : 'w-0'
+        } overflow-hidden`}
+      >
+        <div className="p-4 space-y-4">
+          {/* Language Selection - only show in input tab */}
           {activeTab === 'input' && (
-            <CaseInput 
-              caseText={caseText}
-              language={language}
-              preprocessOptions={preprocessOptions}
-              onCaseChange={handleCaseInput}
-              onLanguageChange={setLanguage}
-              onPreprocessChange={handlePreprocessChange}
-              onSubmit={handleSubmit}
-              loading={loading}
-            />
+            <div className="border-b border-gray-200 pb-4">
+              <button
+                onClick={() => setLanguageExpanded(!languageExpanded)}
+                className="w-full flex items-center justify-between text-sm font-semibold text-gray-800 hover:text-gray-900"
+              >
+                <span>选择语言</span>
+                {languageExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </button>
+              {languageExpanded && (
+                <div className="mt-2 space-y-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="language"
+                      value="zh"
+                      checked={language === 'zh'}
+                      onChange={(e) => setLanguage(e.target.value)}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm text-gray-700">中文</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="language"
+                      value="en"
+                      checked={language === 'en'}
+                      onChange={(e) => setLanguage(e.target.value)}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm text-gray-700">English</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="language"
+                      value="es"
+                      checked={language === 'es'}
+                      onChange={(e) => setLanguage(e.target.value)}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm text-gray-700">Español</span>
+                  </label>
+                </div>
+              )}
+            </div>
           )}
 
-          {/* Model config tab */}
-          {activeTab === 'config' && (
-            <ModelSelector 
-              selectedModel={selectedModel}
-              modelParams={modelParams}
-              onModelChange={setSelectedModel}
-              onParamChange={handleParamChange}
-            />
+          {/* Preprocess Options - only show in input tab */}
+          {activeTab === 'input' && (
+            <div className="border-b border-gray-200 pb-4">
+              <button
+                onClick={() => setPreprocessExpanded(!preprocessExpanded)}
+                className="w-full flex items-center justify-between text-sm font-semibold text-gray-800 hover:text-gray-900"
+              >
+                <span>预处理选项</span>
+                {preprocessExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </button>
+              {preprocessExpanded && (
+                <div className="mt-2 space-y-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={preprocessOptions.removeStopwords}
+                      onChange={() => handlePreprocessChange('removeStopwords')}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm text-gray-700">去除停用词</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={preprocessOptions.keepNumbers}
+                      onChange={() => handlePreprocessChange('keepNumbers')}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm text-gray-700">保留数字</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={preprocessOptions.standardizeTerms}
+                      onChange={() => handlePreprocessChange('standardizeTerms')}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm text-gray-700">术语标准化</span>
+                  </label>
+                </div>
+              )}
+            </div>
           )}
 
-          {/* Prediction results tab */}
-          {activeTab === 'results' && predictions && (
-            <PredictionTable predictions={predictions} />
-          )}
+          {/* Model Config */}
+          <div className="border-b border-gray-200 pb-4">
+            <button
+              onClick={() => setActiveTab('config')}
+              className={`w-full text-left text-sm font-semibold ${
+                activeTab === 'config' ? 'text-indigo-600' : 'text-gray-800 hover:text-gray-900'
+              }`}
+            >
+              模型配置
+            </button>
+          </div>
 
-          {/* Knowledge visualization tab */}
-          {activeTab === 'visualization' && predictions && (
-            <GraphViewer predictions={predictions} />
-          )}
+          {/* Prediction Results */}
+          <div className="border-b border-gray-200 pb-4">
+            <button
+              onClick={() => setActiveTab('results')}
+              disabled={!predictions}
+              className={`w-full text-left text-sm font-semibold ${
+                !predictions
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : activeTab === 'results'
+                  ? 'text-indigo-600'
+                  : 'text-gray-800 hover:text-gray-900'
+              }`}
+            >
+              预测结果
+            </button>
+          </div>
 
-          {/* Explanation analysis tab */}
-          {activeTab === 'explanation' && predictions && (
-            <ExplanationPanel predictions={predictions} />
-          )}
+          {/* Knowledge Visualization */}
+          <div className="border-b border-gray-200 pb-4">
+            <button
+              onClick={() => setActiveTab('visualization')}
+              disabled={!predictions}
+              className={`w-full text-left text-sm font-semibold ${
+                !predictions
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : activeTab === 'visualization'
+                  ? 'text-indigo-600'
+                  : 'text-gray-800 hover:text-gray-900'
+              }`}
+            >
+              知识可视化
+            </button>
+          </div>
 
-          {/* Empty state */}
-          {!predictions && activeTab !== 'input' && activeTab !== 'config' && (
-            <EmptyState message="请先输入病例并运行预测" />
-          )}
+          {/* Explanation Analysis */}
+          <div>
+            <button
+              onClick={() => setActiveTab('explanation')}
+              disabled={!predictions}
+              className={`w-full text-left text-sm font-semibold ${
+                !predictions
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : activeTab === 'explanation'
+                  ? 'text-indigo-600'
+                  : 'text-gray-800 hover:text-gray-900'
+              }`}
+            >
+              可解释性分析
+            </button>
+          </div>
         </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="min-h-screen">
+        {/* Case input - centered in middle-bottom */}
+        {activeTab === 'input' && (
+          <div className="flex items-center justify-center min-h-screen pb-32">
+            <div className="w-full max-w-4xl px-4">
+              <CaseInput 
+                caseText={caseText}
+                onCaseChange={handleCaseInput}
+                onSubmit={handleSubmit}
+                loading={loading}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Other tabs content */}
+        {activeTab !== 'input' && (
+          <div className="p-8">
+            {/* Model config tab */}
+            {activeTab === 'config' && (
+              <ModelSelector 
+                selectedModel={selectedModel}
+                modelParams={modelParams}
+                onModelChange={setSelectedModel}
+                onParamChange={handleParamChange}
+              />
+            )}
+
+            {/* Prediction results tab */}
+            {activeTab === 'results' && predictions && (
+              <PredictionTable predictions={predictions} />
+            )}
+
+            {/* Knowledge visualization tab */}
+            {activeTab === 'visualization' && predictions && (
+              <GraphViewer predictions={predictions} />
+            )}
+
+            {/* Explanation analysis tab */}
+            {activeTab === 'explanation' && predictions && (
+              <ExplanationPanel predictions={predictions} />
+            )}
+
+            {/* Empty state */}
+            {!predictions && activeTab !== 'config' && (
+              <EmptyState message="请先输入病例并运行预测" />
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
 };
-
-// Tab button component
-const TabButton = ({ active, onClick, icon, label }) => (
-  <button
-    onClick={onClick}
-    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-      active
-        ? 'bg-indigo-600 text-white shadow-md'
-        : 'text-gray-600 hover:bg-gray-100'
-    }`}
-  >
-    {icon}
-    {label}
-  </button>
-);
 
 // Empty state component
 const EmptyState = ({ message }) => (
