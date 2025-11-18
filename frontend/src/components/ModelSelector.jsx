@@ -101,13 +101,13 @@ const ModelSelector = ({
         />
       </div>
     </div>
-    {/* Submit button */}
-    <div className="pt-4">
+    {/* Confirm button */}
+    <div className="pt-6">
       <button
         onClick={onSubmit}
-        className="w-full py-3 px-6 rounded-lg font-semibold text-white text-lg transition-all bg-indigo-600 hover:bg-indigo-700 shadow-lg hover:shadow-xl"
+        className="w-full py-3 px-6 rounded-lg font-semibold text-white text-lg transition-all bg-indigo-600 hover:bg-indigo-700 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
       >
-        ✓ 确认配置并返回输入界面
+        确定
       </button>
     </div>
   </div>

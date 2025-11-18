@@ -44,7 +44,7 @@ const MedicalDiagnosisSystem = () => {
     const handleMouseLeave = () => {
       hideTimeoutRef.current = setTimeout(() => {
         setSidebarVisible(false);
-      }, 2000);
+      }, 0);
     };
 
     const trigger = triggerRef.current;
@@ -109,24 +109,51 @@ const MedicalDiagnosisSystem = () => {
     }
     setLoading(true);
     try {
+      // 构建请求体，确保格式匹配后端API
+      const requestBody = {
+        caseText: caseText.trim(),
+        language: language || 'zh',
+        preprocessOptions: preprocessOptions || undefined,
+        model: selectedModel || 'CAML',
+        params: {
+          topK: modelParams.topK || 10,
+          threshold: modelParams.threshold || 0.5,
+          // 移除temperature，因为后端不需要
+        },
+      };
+      
+      // 如果preprocessOptions为空或全为false，则不发送
+      if (preprocessOptions && Object.values(preprocessOptions).every(v => !v)) {
+        delete requestBody.preprocessOptions;
+      }
+      
+      console.log('发送请求到 /api/predict', requestBody);
+      
       // Call backend API
       const response = await fetch('/api/predict', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          caseText,
-          language,
-          preprocessOptions,
-          model: selectedModel,
-          params: modelParams,
-        }),
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(requestBody),
       });
+      
+      console.log('响应状态:', response.status, response.statusText);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ detail: response.statusText }));
+        console.error('API错误响应:', errorData);
+        throw new Error(errorData.detail || `HTTP ${response.status}: ${response.statusText}`);
+      }
+      
       const data = await response.json();
+      console.log('预测结果:', data);
       setPredictions(data);
       setActiveTab('results');
     } catch (error) {
-      console.error('预测失败:', error);
-      alert('预测失败，请重试');
+      console.error('WARNING_MESSAGE:', error);
+      alert(`预测失败: ${error.message || '请重试'}`);
     } finally {
       setLoading(false);
     }

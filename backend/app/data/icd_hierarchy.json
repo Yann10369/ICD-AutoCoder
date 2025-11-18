@@ -1,0 +1,243 @@
+{
+  "timestamp": "2025-11-18T03:33:52.137236",
+  "original_text": "gggg",
+  "model": "hybrid",
+  "top_k": 5,
+  "threshold": 0.5,
+  "predictions": {
+    "entities": {
+      "diseases": [
+        "myocardial infarction",
+        "heart failure",
+        "coronary artery disease"
+      ],
+      "symptoms": [
+        "chest pain",
+        "shortness of breath",
+        "fatigue"
+      ],
+      "procedures": [
+        "echocardiogram",
+        "cardiac catheterization",
+        "ecg"
+      ],
+      "medications": [
+        "aspirin",
+        "atorvastatin",
+        "metoprolol"
+      ]
+    },
+    "entityCount": 12,
+    "icdPredictions": [
+      {
+        "code": "410.71",
+        "description": "Subendocardial infarction",
+        "probability": 0.89
+      },
+      {
+        "code": "410.7",
+        "description": "Subendocardial infarction, initial episode",
+        "probability": 0.82
+      },
+      {
+        "code": "410",
+        "description": "Acute myocardial infarction",
+        "probability": 0.75
+      },
+      {
+        "code": "428.0",
+        "description": "Congestive heart failure, unspecified",
+        "probability": 0.68
+      },
+      {
+        "code": "414.01",
+        "description": "Coronary atherosclerosis of native coronary artery",
+        "probability": 0.61
+      }
+    ],
+    "avgConfidence": 0.75,
+    "processingTime": 0,
+    "keywordHeatmap": [
+      {
+        "term": "chest pain",
+        "importance": 0.95
+      },
+      {
+        "term": "myocardial infarction",
+        "importance": 0.89
+      },
+      {
+        "term": "shortness of breath",
+        "importance": 0.82
+      },
+      {
+        "term": "ecg",
+        "importance": 0.75
+      },
+      {
+        "term": "st segment elevation",
+        "importance": 0.71
+      },
+      {
+        "term": "troponin",
+        "importance": 0.68
+      },
+      {
+        "term": "coronary artery",
+        "importance": 0.64
+      },
+      {
+        "term": "heart failure",
+        "importance": 0.61
+      },
+      {
+        "term": "ejection fraction",
+        "importance": 0.58
+      },
+      {
+        "term": "cardiac enzymes",
+        "importance": 0.55
+      }
+    ],
+    "featureImportance": [
+      {
+        "name": "chest pain",
+        "score": 0.92
+      },
+      {
+        "name": "st elevation",
+        "score": 0.87
+      },
+      {
+        "name": "troponin elevated",
+        "score": 0.83
+      },
+      {
+        "name": "ecg abnormal",
+        "score": 0.79
+      },
+      {
+        "name": "coronary occlusion",
+        "score": 0.74
+      },
+      {
+        "name": "cardiac enzymes",
+        "score": 0.7
+      },
+      {
+        "name": "left ventricular dysfunction",
+        "score": 0.66
+      },
+      {
+        "name": "hypotension",
+        "score": 0.62
+      },
+      {
+        "name": "arrhythmia",
+        "score": 0.59
+      },
+      {
+        "name": "elevated bnp",
+        "score": 0.56
+      }
+    ],
+    "decisionPath": [
+      {
+        "description": "数据预处理：文本清洗、分词、标准化",
+        "confidence": 1.0
+      },
+      {
+        "description": "实体识别：识别到心肌梗死、心力衰竭等相关医学术语",
+        "confidence": 0.95
+      },
+      {
+        "description": "模型预测：CAML模型预测ICD编码 410.71 (置信度: 0.89)",
+        "confidence": 0.89
+      },
+      {
+        "description": "知识图谱过滤：验证ICD编码在层次结构中的合理性",
+        "confidence": 0.92
+      },
+      {
+        "description": "LLM验证：大模型验证预测结果的临床合理性",
+        "confidence": 0.87
+      },
+      {
+        "description": "结果融合：多模型协同推理，融合最终结果",
+        "confidence": 0.85
+      }
+    ],
+    "modelsUsed": [
+      "hybrid"
+    ],
+    "preprocessedText": "gggg",
+    "originalText": "gggg",
+    "isMock": true,
+    "mockMode": true
+  },
+  "icd_hierarchy": {
+    "410": {
+      "code": "410",
+      "name": "Acute myocardial infarction",
+      "level": 1,
+      "parent": null,
+      "children": [
+        "410.71",
+        "410.7"
+      ],
+      "probability": 0.75
+    },
+    "410.71": {
+      "code": "410.71",
+      "name": "Subendocardial infarction",
+      "level": 2,
+      "parent": "410",
+      "children": [],
+      "probability": 0.89
+    },
+    "410.7": {
+      "code": "410.7",
+      "name": "Subendocardial infarction, initial episode",
+      "level": 2,
+      "parent": "410",
+      "children": [],
+      "probability": 0.82
+    },
+    "428": {
+      "code": "428",
+      "name": "",
+      "level": 1,
+      "parent": null,
+      "children": [
+        "428.0"
+      ],
+      "probability": 0.0
+    },
+    "428.0": {
+      "code": "428.0",
+      "name": "Congestive heart failure, unspecified",
+      "level": 2,
+      "parent": "428",
+      "children": [],
+      "probability": 0.68
+    },
+    "414": {
+      "code": "414",
+      "name": "",
+      "level": 1,
+      "parent": null,
+      "children": [
+        "414.01"
+      ],
+      "probability": 0.0
+    },
+    "414.01": {
+      "code": "414.01",
+      "name": "Coronary atherosclerosis of native coronary artery",
+      "level": 2,
+      "parent": "414",
+      "children": [],
+      "probability": 0.61
+    }
+  }
+}
