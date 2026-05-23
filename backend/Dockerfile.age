@@ -1,0 +1,36 @@
+# Dockerfile for PostgreSQL with AGE extension
+# 这个 Dockerfile 用于构建包含 AGE 扩展的 PostgreSQL 镜像
+# 注意：需要从源码编译 AGE，这可能需要较长时间
+
+FROM postgres:15-alpine
+
+# 安装编译依赖
+RUN apk add --no-cache \
+    build-base \
+    clang \
+    git \
+    postgresql-dev \
+    python3 \
+    py3-pip \
+    cmake \
+    make \
+    gcc \
+    g++ \
+    libc-dev
+
+# 克隆并编译 AGE
+WORKDIR /tmp
+RUN git clone https://github.com/apache/age.git && \
+    cd age && \
+    git checkout master && \
+    make install
+
+# 清理构建文件
+RUN rm -rf /tmp/age
+
+# 复制初始化脚本
+COPY init-db.sql /docker-entrypoint-initdb.d/
+
+# 设置权限
+RUN chmod 755 /docker-entrypoint-initdb.d/init-db.sql
+

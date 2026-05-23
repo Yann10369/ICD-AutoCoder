@@ -1,38 +1,21 @@
-# Build stage
-# Using official source (will use Docker Desktop mirror if configured)
-FROM node:18-alpine AS builder
-
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-
-# Install dependencies
-# Using npm install instead of npm ci since package-lock.json may not exist
-RUN npm install
-
-# Copy source code
-COPY . .
-
-# Move index.html from public to root (Vite requires it in root)
-RUN cp public/index.html ./index.html
-
-# Build the application
-RUN npm run build
-
-# Production stage
-# Using official source (will use Docker Desktop mirror if configured)
+# 前端Dockerfile - 使用本地已构建的dist文件夹
 FROM nginx:alpine
 
-# Copy built files from builder stage
-COPY --from=builder /app/dist /usr/share/nginx/html
+# 安装curl用于健康检查
+RUN apk add --no-cache curl
 
-# Copy nginx configuration
+# 复制本地已构建的dist文件夹
+COPY dist /usr/share/nginx/html
+
+# 复制nginx配置
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port
+# 暴露端口
 EXPOSE 80
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost/health || exit 1
 
+# 启动nginx
+CMD ["nginx", "-g", "daemon off;"]

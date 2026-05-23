@@ -1,402 +1,135 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Settings, BarChart3, Network, Zap, ChevronDown, ChevronUp } from 'lucide-react';
-import CaseInput from './components/CaseInput';
-import ModelSelector from './components/ModelSelector';
-import PredictionTable from './components/PredictionTable';
-import GraphViewer from './components/GraphViewer';
-import ExplanationPanel from './components/ExplanationPanel';
+/**
+ * 应用入口组件 - 简化版，不依赖 react-router-dom
+ */
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth, AuthProvider } from './contexts/AuthContext';
+import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
+import WorklistPage from './pages/WorklistPage';
+import WorkspacePage from './pages/WorkspacePage';
+import GraphHallPage from './pages/GraphHallPage';
+import QualityCheckPage from './pages/QualityCheckPage';
+import WorkflowPage from './pages/WorkflowPage';
+import QaCenterPage from './pages/QaCenterPage';
+import ModelsPage from './pages/ModelsPage';
+import SettingsPage from './pages/SettingsPage';
+import Sidebar from './components/layout/Sidebar';
+import Header from './components/layout/Header';
 
-// Main component
-const MedicalDiagnosisSystem = () => {
-  const [caseText, setCaseText] = useState('');
-  const [language, setLanguage] = useState('zh');
-  const [preprocessOptions, setPreprocessOptions] = useState({
-    removeStopwords: true,
-    keepNumbers: true,
-    standardizeTerms: true,
-  });
-  const [selectedModel, setSelectedModel] = useState('hybrid');
-  const [modelParams, setModelParams] = useState({
-    temperature: 0.7,
-    topK: 5,
-    threshold: 0.5,
-  });
-  const [predictions, setPredictions] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('input');
-  const [sidebarVisible, setSidebarVisible] = useState(false);
-  const [languageExpanded, setLanguageExpanded] = useState(false);
-  const [preprocessExpanded, setPreprocessExpanded] = useState(false);
-  const sidebarRef = useRef(null);
-  const triggerRef = useRef(null);
-  const hideTimeoutRef = useRef(null);
+// 路由守卫组件 - 检查用户权限
+function ProtectedRoute({ children, requiredPermission, requiredRoles }) {
+  const { user, hasPermission } = useAuth();
 
-  // Handle sidebar visibility
-  useEffect(() => {
-    const handleMouseEnter = () => {
-      if (hideTimeoutRef.current) {
-        clearTimeout(hideTimeoutRef.current);
-        hideTimeoutRef.current = null;
-      }
-      setSidebarVisible(true);
-    };
+  // 检查角色
+  if (requiredRoles && !requiredRoles.includes(user?.role)) {
+    return <DashboardPage />;
+  }
 
-    const handleMouseLeave = () => {
-      hideTimeoutRef.current = setTimeout(() => {
-        setSidebarVisible(false);
-      }, 0);
-    };
+  // 检查权限
+  if (requiredPermission && !hasPermission(...requiredPermission)) {
+    return <DashboardPage />;
+  }
 
-    const trigger = triggerRef.current;
-    const sidebar = sidebarRef.current;
-    
-    if (trigger) {
-      trigger.addEventListener('mouseenter', handleMouseEnter);
-      trigger.addEventListener('mouseleave', handleMouseLeave);
-    }
-    if (sidebar) {
-      sidebar.addEventListener('mouseenter', handleMouseEnter);
-      sidebar.addEventListener('mouseleave', handleMouseLeave);
-    }
+  return children;
+}
 
-    return () => {
-      if (trigger) {
-        trigger.removeEventListener('mouseenter', handleMouseEnter);
-        trigger.removeEventListener('mouseleave', handleMouseLeave);
-      }
-      if (sidebar) {
-        sidebar.removeEventListener('mouseenter', handleMouseEnter);
-        sidebar.removeEventListener('mouseleave', handleMouseLeave);
-      }
-      if (hideTimeoutRef.current) {
-        clearTimeout(hideTimeoutRef.current);
-      }
-    };
+// 简单的路由实现
+function SimpleRouter() {
+  const { isAuthenticated, loading } = useAuth();
+  const [currentPage, setCurrentPage] = useState('dashboard');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // 待处理病例队列 - 传递给workspace页面编码
+  const [pendingCaseIds, setPendingCaseIds] = useState([]);
+  // 导航到workspace的回调（用于子组件）
+  const navigateToWorkspace = useCallback((caseIds) => {
+    setPendingCaseIds(caseIds || []);
+    setCurrentPage('workspace');
   }, []);
 
-  // Handle case input
-  const handleCaseInput = (e) => {
-    setCaseText(e.target.value);
-  };
+  useEffect(() => {
+    // 简单的 URL hash 路由
+    const handleHashChange = () => {
+      const rawHash = window.location.hash.slice(1) || 'dashboard';
+      // 只取路径部分（不含查询参数）
+      const page = rawHash.split('?')[0];
+      setCurrentPage(page);
+    };
+    handleHashChange();
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
-  // Handle preprocess options change
-  const handlePreprocessChange = (option) => {
-    setPreprocessOptions(prev => ({
-      ...prev,
-      [option]: !prev[option]
-    }));
-  };
-
-  // Handle model parameters change
-  const handleParamChange = (param, value) => {
-    setModelParams(prev => ({
-      ...prev,
-      [param]: parseFloat(value)
-    }));
-  };
-
-  // Handle model config submit
-  const handleModelConfigSubmit = () => {
-    // Model parameters are already saved in state, just switch to input tab
-    setActiveTab('input');
-  };
-
-  // Submit analysis
-  const handleSubmit = async () => {
-    if (!caseText.trim()) {
-      alert('请输入病例信息');
-      return;
-    }
-    setLoading(true);
-    try {
-      // 构建请求体，确保格式匹配后端API
-      const requestBody = {
-        caseText: caseText.trim(),
-        language: language || 'zh',
-        preprocessOptions: preprocessOptions || undefined,
-        model: selectedModel || 'CAML',
-        params: {
-          topK: modelParams.topK || 10,
-          threshold: modelParams.threshold || 0.5,
-          // 移除temperature，因为后端不需要
-        },
-      };
-      
-      // 如果preprocessOptions为空或全为false，则不发送
-      if (preprocessOptions && Object.values(preprocessOptions).every(v => !v)) {
-        delete requestBody.preprocessOptions;
-      }
-      
-      console.log('发送请求到 /api/predict', requestBody);
-      
-      // Call backend API
-      const response = await fetch('/api/predict', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(requestBody),
-      });
-      
-      console.log('响应状态:', response.status, response.statusText);
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ detail: response.statusText }));
-        console.error('API错误响应:', errorData);
-        throw new Error(errorData.detail || `HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      console.log('预测结果:', data);
-      setPredictions(data);
-      setActiveTab('results');
-    } catch (error) {
-      console.error('WARNING_MESSAGE:', error);
-      alert(`预测失败: ${error.message || '请重试'}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-white relative">
-      {/* Left trigger area */}
-      <div
-        ref={triggerRef}
-        className="fixed left-0 top-0 h-full w-4 z-40"
-      />
-      
-      {/* Left Sidebar */}
-      <div
-        ref={sidebarRef}
-        className={`fixed left-0 top-0 h-full bg-white border-r border-gray-200 transition-all duration-300 z-50 ${
-          sidebarVisible ? 'w-64' : 'w-0'
-        } overflow-hidden`}
-      >
-        <div className="p-4 space-y-4">
-          {/* Language Selection - only show in input tab */}
-          {activeTab === 'input' && (
-            <div className="border-b border-gray-200 pb-4">
-              <button
-                onClick={() => setLanguageExpanded(!languageExpanded)}
-                className="w-full flex items-center justify-between text-sm font-semibold text-gray-800 hover:text-gray-900"
-              >
-                <span>选择语言</span>
-                {languageExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-              </button>
-              {languageExpanded && (
-                <div className="mt-2 space-y-2">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="language"
-                      value="zh"
-                      checked={language === 'zh'}
-                      onChange={(e) => setLanguage(e.target.value)}
-                      className="w-4 h-4"
-                    />
-                    <span className="text-sm text-gray-700">中文</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="language"
-                      value="en"
-                      checked={language === 'en'}
-                      onChange={(e) => setLanguage(e.target.value)}
-                      className="w-4 h-4"
-                    />
-                    <span className="text-sm text-gray-700">English</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="language"
-                      value="es"
-                      checked={language === 'es'}
-                      onChange={(e) => setLanguage(e.target.value)}
-                      className="w-4 h-4"
-                    />
-                    <span className="text-sm text-gray-700">Español</span>
-                  </label>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Preprocess Options - only show in input tab */}
-          {activeTab === 'input' && (
-            <div className="border-b border-gray-200 pb-4">
-              <button
-                onClick={() => setPreprocessExpanded(!preprocessExpanded)}
-                className="w-full flex items-center justify-between text-sm font-semibold text-gray-800 hover:text-gray-900"
-              >
-                <span>预处理选项</span>
-                {preprocessExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-              </button>
-              {preprocessExpanded && (
-                <div className="mt-2 space-y-2">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={preprocessOptions.removeStopwords}
-                      onChange={() => handlePreprocessChange('removeStopwords')}
-                      className="w-4 h-4"
-                    />
-                    <span className="text-sm text-gray-700">去除停用词</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={preprocessOptions.keepNumbers}
-                      onChange={() => handlePreprocessChange('keepNumbers')}
-                      className="w-4 h-4"
-                    />
-                    <span className="text-sm text-gray-700">保留数字</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={preprocessOptions.standardizeTerms}
-                      onChange={() => handlePreprocessChange('standardizeTerms')}
-                      className="w-4 h-4"
-                    />
-                    <span className="text-sm text-gray-700">术语标准化</span>
-                  </label>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Model Config */}
-          <div className="border-b border-gray-200 pb-4">
-            <button
-              onClick={() => setActiveTab('config')}
-              className={`w-full text-left text-sm font-semibold ${
-                activeTab === 'config' ? 'text-indigo-600' : 'text-gray-800 hover:text-gray-900'
-              }`}
-            >
-              模型配置
-            </button>
-          </div>
-
-          {/* Prediction Results */}
-          <div className="border-b border-gray-200 pb-4">
-            <button
-              onClick={() => setActiveTab('results')}
-              disabled={!predictions}
-              className={`w-full text-left text-sm font-semibold ${
-                !predictions
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : activeTab === 'results'
-                  ? 'text-indigo-600'
-                  : 'text-gray-800 hover:text-gray-900'
-              }`}
-            >
-              预测结果
-            </button>
-          </div>
-
-          {/* Knowledge Visualization */}
-          <div className="border-b border-gray-200 pb-4">
-            <button
-              onClick={() => setActiveTab('visualization')}
-              disabled={!predictions}
-              className={`w-full text-left text-sm font-semibold ${
-                !predictions
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : activeTab === 'visualization'
-                  ? 'text-indigo-600'
-                  : 'text-gray-800 hover:text-gray-900'
-              }`}
-            >
-              知识可视化
-            </button>
-          </div>
-
-          {/* Explanation Analysis */}
-          <div>
-            <button
-              onClick={() => setActiveTab('explanation')}
-              disabled={!predictions}
-              className={`w-full text-left text-sm font-semibold ${
-                !predictions
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : activeTab === 'explanation'
-                  ? 'text-indigo-600'
-                  : 'text-gray-800 hover:text-gray-900'
-              }`}
-            >
-              可解释性分析
-            </button>
-          </div>
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">加载中...</p>
         </div>
       </div>
+    );
+  }
 
-      {/* Main Content Area */}
-      <div className="min-h-screen">
-        {/* Case input - centered in middle-bottom */}
-        {activeTab === 'input' && (
-          <div className="flex items-center justify-center min-h-screen pb-32">
-            <div className="w-full max-w-4xl px-4">
-              <CaseInput 
-                caseText={caseText}
-                onCaseChange={handleCaseInput}
-                onSubmit={handleSubmit}
-                loading={loading}
+  if (!isAuthenticated) {
+    return <LoginPage onLoginSuccess={() => setCurrentPage('dashboard')} />;
+  }
+
+  return (
+    <div className="h-screen flex overflow-hidden bg-white">
+      <Sidebar
+        collapsed={sidebarCollapsed}
+        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+        currentPage={currentPage}
+        onNavigate={setCurrentPage}
+      />
+
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header />
+        <main className="flex-1 overflow-hidden">
+          {currentPage === 'dashboard' && <DashboardPage />}
+          {currentPage === 'worklist' && (
+            <ProtectedRoute requiredPermission={['cases', 'read']}>
+              <WorklistPage
+                onNavigateToCase={(caseId) => {
+                  setPendingCaseIds([caseId]);
+                  setCurrentPage('workspace');
+                }}
+                onBatchCoding={(caseIds) => {
+                  setPendingCaseIds(caseIds);
+                  setCurrentPage('workspace');
+                }}
               />
-            </div>
-          </div>
-        )}
-
-        {/* Other tabs content */}
-        {activeTab !== 'input' && (
-          <div className="p-8">
-            {/* Model config tab */}
-            {activeTab === 'config' && (
-              <ModelSelector 
-                selectedModel={selectedModel}
-                modelParams={modelParams}
-                onModelChange={setSelectedModel}
-                onParamChange={handleParamChange}
-                onSubmit={handleModelConfigSubmit}
-              />
-            )}
-
-            {/* Prediction results tab */}
-            {activeTab === 'results' && predictions && (
-              <PredictionTable predictions={predictions} />
-            )}
-
-            {/* Knowledge visualization tab */}
-            {activeTab === 'visualization' && predictions && (
-              <GraphViewer predictions={predictions} />
-            )}
-
-            {/* Explanation analysis tab */}
-            {activeTab === 'explanation' && predictions && (
-              <ExplanationPanel predictions={predictions} />
-            )}
-
-            {/* Empty state */}
-            {!predictions && activeTab !== 'config' && (
-              <EmptyState message="请先输入病例并运行预测" />
-            )}
-          </div>
-        )}
+            </ProtectedRoute>
+          )}
+          {currentPage === 'workspace' && <WorkspacePage pendingCaseIds={pendingCaseIds} onCasesLoaded={() => setPendingCaseIds([])} />}
+          {currentPage === 'graph' && <GraphHallPage />}
+          {currentPage === 'quality-check' && (
+            <ProtectedRoute requiredPermission={['audit', 'read']}>
+              <QualityCheckPage />
+            </ProtectedRoute>
+          )}
+          {currentPage === 'workflow' && <WorkflowPage />}
+          {currentPage === 'qa-center' && <QaCenterPage />}
+          {currentPage === 'models' && (
+            <ProtectedRoute requiredRoles={['admin', 'auditor']}>
+              <ModelsPage />
+            </ProtectedRoute>
+          )}
+          {currentPage === 'settings' && (
+            <ProtectedRoute>
+              <SettingsPage />
+            </ProtectedRoute>
+          )}
+        </main>
       </div>
     </div>
   );
-};
+}
 
-// Empty state component
-const EmptyState = ({ message }) => (
-  <div className="flex flex-col items-center justify-center py-16">
-    <div className="text-6xl mb-4">📭</div>
-    <p className="text-xl text-gray-600">{message}</p>
-  </div>
-);
-
-export default MedicalDiagnosisSystem;
-
+export default function App() {
+  return (
+    <AuthProvider>
+      <SimpleRouter />
+    </AuthProvider>
+  );
+}

@@ -1,0 +1,144 @@
+{
+  "timestamp": "2026-05-18T22:04:27.830195",
+  "original_text": "患者张三，0岁，未知。\n主诉：无\n\n现病史：\n无详细现病史\n\n体格检查：\n无\n\n辅助检查：\n无\n\n诊断：\n无\n\n治疗经过：\n无",
+  "model": "hybrid",
+  "top_k": 10,
+  "threshold": 0.5,
+  "predictions": {
+    "icdPredictions": [
+      {
+        "code": "I21.9",
+        "description": "急性心肌梗死，未特指",
+        "probability": 0.92
+      },
+      {
+        "code": "I25.10",
+        "description": "动脉粥样硬化性心脏病",
+        "probability": 0.85
+      },
+      {
+        "code": "I10",
+        "description": "原发性高血压",
+        "probability": 0.78
+      },
+      {
+        "code": "I50.9",
+        "description": "心力衰竭，未特指",
+        "probability": 0.65
+      },
+      {
+        "code": "I20.9",
+        "description": "心绞痛，未特指",
+        "probability": 0.58
+      },
+      {
+        "code": "R07.4",
+        "description": "胸痛",
+        "probability": 0.52
+      }
+    ],
+    "explanation": "### 预测结果解释\n\n根据病例文本分析，患者表现出以下关键临床特征：\n\n1. **急性心肌梗死（I21.9）**：\n   - 支持证据：突发胸痛、向左肩放射、大汗、心电图ST段抬高\n   - 这是最核心的诊断，与临床表现高度匹配\n\n2. **动脉粥样硬化性心脏病（I25.10）**：\n   - 支持证据：高血压病史、胸痛症状\n   - 作为基础疾病，是急性心肌梗死的病因\n\n3. **原发性高血压（I10）**：\n   - 支持证据：明确的高血压病史10年\n   - 作为重要的心血管危险因素\n\n以上预测基于临床文本特征提取与ICD编码知识库的匹配分析。",
+    "model_used": "mock",
+    "processing_time": "0.01s"
+  },
+  "icd_hierarchy": {
+    "I21": {
+      "code": "I21",
+      "name": "",
+      "level": 1,
+      "parent": null,
+      "children": [
+        "I21.9"
+      ],
+      "probability": 0.0
+    },
+    "I21.9": {
+      "code": "I21.9",
+      "name": "急性心肌梗死，未特指",
+      "level": 2,
+      "parent": "I21",
+      "children": [],
+      "probability": 0.92
+    },
+    "I25": {
+      "code": "I25",
+      "name": "",
+      "level": 1,
+      "parent": null,
+      "children": [
+        "I25.10"
+      ],
+      "probability": 0.0
+    },
+    "I25.10": {
+      "code": "I25.10",
+      "name": "动脉粥样硬化性心脏病",
+      "level": 2,
+      "parent": "I25",
+      "children": [],
+      "probability": 0.85
+    },
+    "I10": {
+      "code": "I10",
+      "name": "原发性高血压",
+      "level": 1,
+      "parent": null,
+      "children": [],
+      "probability": 0.78
+    },
+    "I50": {
+      "code": "I50",
+      "name": "",
+      "level": 1,
+      "parent": null,
+      "children": [
+        "I50.9"
+      ],
+      "probability": 0.0
+    },
+    "I50.9": {
+      "code": "I50.9",
+      "name": "心力衰竭，未特指",
+      "level": 2,
+      "parent": "I50",
+      "children": [],
+      "probability": 0.65
+    },
+    "I20": {
+      "code": "I20",
+      "name": "",
+      "level": 1,
+      "parent": null,
+      "children": [
+        "I20.9"
+      ],
+      "probability": 0.0
+    },
+    "I20.9": {
+      "code": "I20.9",
+      "name": "心绞痛，未特指",
+      "level": 2,
+      "parent": "I20",
+      "children": [],
+      "probability": 0.58
+    },
+    "R07": {
+      "code": "R07",
+      "name": "",
+      "level": 1,
+      "parent": null,
+      "children": [
+        "R07.4"
+      ],
+      "probability": 0.0
+    },
+    "R07.4": {
+      "code": "R07.4",
+      "name": "胸痛",
+      "level": 2,
+      "parent": "R07",
+      "children": [],
+      "probability": 0.52
+    }
+  }
+}

@@ -55,7 +55,6 @@ def merge_predictions(
             if icd not in merged:
                 merged[icd] = {
                     'icd_code': icd,
-                    'icd_name': item.get('icd_name', ''),
                     'probability': 0.0,
                     'count': 0
                 }

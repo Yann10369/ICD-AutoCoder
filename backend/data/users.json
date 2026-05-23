@@ -1,0 +1,38 @@
+{
+  "admin": {
+    "id": "user_1778675190340",
+    "username": "admin",
+    "email": "admin@icd.com",
+    "full_name": "系统管理员",
+    "hashed_password": "$2b$12$s.qtwsOx8wMo6oOlb95C..9QG3F8ZG/18f0jiSD4LAgDPMkyw2V8q",
+    "role": "admin",
+    "department": "信息科",
+    "status": "active",
+    "created_at": "2026-05-13T20:26:30.340211",
+    "last_login": "2026-05-23T10:49:30.204533"
+  },
+  "coder": {
+    "id": "user_1778675190624",
+    "username": "coder",
+    "email": "coder@icd.com",
+    "full_name": "病案编码员",
+    "hashed_password": "$2b$12$W4anTCaj9QSc1wvfjebZ6OONvhMELG5gTdBLem/uR/uTtj3xJKIDa",
+    "role": "coder",
+    "department": "病案科",
+    "status": "active",
+    "created_at": "2026-05-13T20:26:30.624738",
+    "last_login": "2026-05-19T01:28:46.615328"
+  },
+  "doctor": {
+    "id": "user_1778675190911",
+    "username": "doctor",
+    "email": "doctor@icd.com",
+    "full_name": "张医生",
+    "hashed_password": "$2b$12$04yWCH8Jty4XkDDjofQr/OeNjEv3jtN8/8cNFXGvPQ/XXA6iSgoYW",
+    "role": "doctor",
+    "department": "心内科",
+    "status": "active",
+    "created_at": "2026-05-13T20:26:30.911311",
+    "last_login": "2026-05-18T15:00:38.300624"
+  }
+}
