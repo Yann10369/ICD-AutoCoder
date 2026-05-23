@@ -56,3 +56,6 @@ backend/app/data/cache/
 *.db
 *.sqlite
 
+# Wheels (binary packages)
+backend/wheels/
+
