@@ -1,6 +1,6 @@
 ---
 name: git-pr-commit
-description: 将本地代码修改提交到 Git 并生成规范的 Pull Request 描述。当用户要求"提交代码"、"创建PR"、"git commit and PR"或类似的git工作流请求时使用此技能。
+description: 将本地代码修改提交到 Git 并生成规范的 Pull Request 描述，最后自动推送到远程仓库。当用户要求"提交代码"、"创建PR"、"git commit and PR"或类似的git工作流请求时使用此技能。
 argument-hint: [可选的提交信息]
 user-invocable: true
 allowed-tools:
@@ -32,6 +32,7 @@ AI 从**历史对话**中提取修改内容，而非分析 git diff：
 2. **从历史对话提取** - 总结 AI 在对话中做的修改
 3. **生成提交信息** - 基于实际修改行为
 4. **生成 PR 描述** - 符合 `.github/pull_request_template.md`
+5. **执行提交并推送** - 确认后执行 git commit + git push
 
 ## 执行流程
 
@@ -106,8 +107,19 @@ Commit Message: 修复E11.9编码边界情况及同步更新前端验证UI
 Commit Message:
   修复E11.9编码边界情况及同步更新前端验证UI
 
-确认提交? (y/n):
+确认提交并推送? (y/n):
 ```
+
+### 步骤 6：执行提交并推送
+
+用户确认后执行：
+```bash
+git add <变更文件>
+git commit -m "<Commit Message>"
+git push
+```
+
+显示提交结果和远程仓库链接。
 
 ## 涉及模块检测规则
 
