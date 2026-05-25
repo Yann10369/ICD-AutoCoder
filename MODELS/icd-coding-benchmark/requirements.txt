@@ -1,0 +1,5 @@
+# Gateway - 仅请求转发，最小依赖
+fastapi>=0.100.0
+uvicorn>=0.22.0
+requests>=2.31.0
+pydantic>=2.0.0

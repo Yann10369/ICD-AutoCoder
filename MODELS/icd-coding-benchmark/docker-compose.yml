@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  # 小模型聚合网关 - 只做请求转发，保持最小镜像
+  models-gateway:
+    image: icd-autocoder-models-gateway:latest
+    container_name: models-gateway
+    ports:
+      - "8005:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DEFAULT_BASE_URL=http://plm-icd-service:8001
+    restart: on-failure:3
+    networks:
+      - icd-network
+    depends_on:
+      plm-icd:
+        condition: service_started
+
+  # PLM-ICD 模型服务（独立PyTorch环境）
+  plm-icd:
+    build:
+      context: ./PLM-ICD
+      dockerfile: ./service/Dockerfile
+    image: models-plm-icd:latest
+    container_name: plm-icd-service
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./PLM-ICD/param:/app/models/plm-icd/param:ro
+      - ./PLM-ICD/src:/app/src:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: on-failure:3
+    networks:
+      - icd-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/models/plm-icd/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # NER 模型服务（独立PyTorch环境）
+  biomed-ner:
+    build:
+      context: ./small_models/ner_service
+      dockerfile: Dockerfile
+    container_name: biomed-ner-service
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./small_models/BiomedNLP-PubMedBERT:/app/models/BiomedNLP-PubMedBERT:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: on-failure:3
+    networks:
+      - icd-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/models/ner/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Benchmark模型服务（CAML, DCAN, Fusion, MultiResCNN, TransICD共享PyTorch环境）
+  benchmark-models:
+    build:
+      context: ./icd-coding-benchmark
+      dockerfile: Dockerfile
+    container_name: benchmark-models-service
+    ports:
+      - "8003:8003"
+    volumes:
+      - ./icd-coding-benchmark:/app/icd-coding-benchmark:ro
+      - ./icd-coding-benchmark/datasets/mimic3/static:/app/icd-coding-benchmark/datasets/mimic3/static:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: on-failure:3
+    networks:
+      - icd-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/models/benchmark/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  icd-network:
+    external: true
